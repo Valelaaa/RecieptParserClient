@@ -4,31 +4,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import md.keeproblems.recieptparser.data.apiservices.HtmlPayload
+import md.keeproblems.recieptparser.data.apiservices.ParserApiService
+import md.keeproblems.recieptparser.data.entities.PriceInfoDto
+import md.keeproblems.recieptparser.data.entities.ProductBody
 import md.keeproblems.recieptparser.data.entities.ReceiptResponseBody
 import md.keeproblems.recieptparser.data.entities.parser.ReceiptMapper
-import md.keeproblems.recieptparser.data.entities.parser.impl.ReceiptMapperImpl
-import md.keeproblems.recieptparser.data.apiservices.ParserApiService
-import md.keeproblems.recieptparser.data.entities.PriceInfo
-import md.keeproblems.recieptparser.data.entities.ProductBody
-import md.keeproblems.recieptparser.domain.models.Product
-import md.keeproblems.recieptparser.domain.models.TotalPrice
+import md.keeproblems.recieptparser.domain.models.Products
+import md.keeproblems.recieptparser.domain.models.PriceInfo
 import md.keeproblems.recieptparser.domain.repository.ReceiptRepository
-import md.keeproblems.recieptparser.utils.RetrofitProvider
 import okhttp3.OkHttpClient
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import retrofit2.create
 import java.io.IOException
+import javax.inject.Inject
 
-internal class ReceiptRepositoryImpl(
-    private val mapper: ReceiptMapper = ReceiptMapperImpl(),
-    private val apiService: ParserApiService = RetrofitProvider.retrofit
-        .create<ParserApiService>()
+internal class ReceiptRepositoryImpl @Inject constructor(
+    private val mapper: ReceiptMapper,
+    private val apiService: ParserApiService
 ) : ReceiptRepository {
     private val cachedProducts = MutableStateFlow<ReceiptResponseBody?>(null)
-    override suspend fun getProducts(url: String): Result<List<Product>> {
+    override suspend fun getProducts(url: String): Result<Products> {
+        println("!!! beforeGet!!!")
         val result = runCatching {
             val products = getCachedProducts(url)
             println("!!! products:${products}")
@@ -39,7 +36,7 @@ internal class ReceiptRepositoryImpl(
         return result
     }
 
-    override suspend fun getTotalPrice(url: String): Result<TotalPrice> {
+    override suspend fun getTotalPrice(url: String): Result<PriceInfo> {
         val result = runCatching {
             val products = getCachedProducts(url)
             mapper.mapTotalPrice(products)
@@ -51,22 +48,13 @@ internal class ReceiptRepositoryImpl(
             .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
             .timeout(10_000)
             .get()
+        println("+++ ${parsingProcess(doc)}")
+
         return parsingProcess(doc)
     }
-    //
-//    private suspend fun getCachedProducts(url: String): ReceiptResponseBody? {
-//        if (cachedProducts.value == null) {
-//            val html = fetchHtml(url)
-//            cachedProducts.update {
-//                apiService.parseHtml(HtmlPayload(html))
-//            }
-//            println("!!! html:${html}")
-//        }
-//        return cachedProducts.value
-//    }
     private suspend fun getCachedProducts(url: String): ReceiptResponseBody? {
         if (cachedProducts.value == null) {
-            val parsed = parseHtml(url) // локальный парсинг
+            val parsed = parseHtml(url)
             cachedProducts.update { parsed }
         }
         return cachedProducts.value
@@ -75,6 +63,7 @@ internal class ReceiptRepositoryImpl(
     fun parseHtmlString(html: String): ReceiptResponseBody {
         println("!!!! html:${html}")
         val doc = Jsoup.parse(html)
+        println("+++ $ {parsingProcess(doc)}")
         return parsingProcess(doc)
     }
 
@@ -166,7 +155,7 @@ internal class ReceiptRepositoryImpl(
                 val priceInfo = spans[1].text().trim().split(PRICE_DELIMITER).map { it.trim() }
                 ProductBody(
                     productName = spans[0].text().trim(),
-                    productPrice = PriceInfo(
+                    productPrice = PriceInfoDto(
                         count = priceInfo.first().toDouble(),
                         price = priceInfo.last().toDouble()
                     )

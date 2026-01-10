@@ -1,14 +1,14 @@
 package md.keeproblems.recieptparser.domain.usecases.impl
 
-import md.keeproblems.recieptparser.data.repository.ReceiptRepositoryImpl
-import md.keeproblems.recieptparser.domain.models.Product
+import md.keeproblems.recieptparser.domain.models.Products
 import md.keeproblems.recieptparser.domain.repository.ReceiptRepository
 import md.keeproblems.recieptparser.domain.usecases.GetProductsUseCase
+import javax.inject.Inject
 
-internal class GetProductsUseCaseImpl(
-    private val receiptRepository: ReceiptRepository = ReceiptRepositoryImpl()
+internal class GetProductsUseCaseImpl @Inject constructor(
+    private val receiptRepository: ReceiptRepository
 ) : GetProductsUseCase {
-    override suspend fun invoke(url: String): List<Product> {
+    override suspend fun invoke(url: String): Products {
         return receiptRepository.getProducts(url).getOrThrow()
     }
 }

@@ -1,40 +1,40 @@
 
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontStyle
 import md.keeproblems.recieptparser.R
 
-private val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
+import androidx.compose.ui.text.font.Font
+
+val OpenSans = FontFamily(
+    // Regular & Italic
+    Font(R.font.open_sans_regular, FontWeight.Normal),
+    Font(R.font.open_sans_italic, FontWeight.Normal, FontStyle.Italic),
+
+    // Light
+    Font(R.font.open_sans_light, FontWeight.Light),
+    Font(R.font.open_sans_light_italic, FontWeight.Light, FontStyle.Italic),
+
+    // Medium
+    Font(R.font.open_sans_medium, FontWeight.Medium),
+    Font(R.font.open_sans_medium_italic, FontWeight.Medium, FontStyle.Italic),
+
+    // SemiBold
+    Font(R.font.open_sans_semi_bold, FontWeight.SemiBold),
+    Font(R.font.open_sans_semi_bold_italic, FontWeight.SemiBold, FontStyle.Italic),
+
+    // Bold
+    Font(R.font.open_sans_bold, FontWeight.Bold),
+    Font(R.font.open_sans_bold_italic, FontWeight.Bold, FontStyle.Italic),
+
+    // Extra Bold
+    Font(R.font.open_sans_extra_bold, FontWeight.ExtraBold),
+    Font(R.font.open_sans_extra_bold_italic, FontWeight.ExtraBold, FontStyle.Italic)
 )
 
-val InterFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Inter"),
-        fontProvider = provider,
-        weight = FontWeight.Normal,
-        style = FontStyle.Normal
-    ),
-    Font(
-        googleFont = GoogleFont("Inter"),
-        fontProvider = provider,
-        weight = FontWeight.Medium,
-        style = FontStyle.Normal
-    ),
-    Font(
-        googleFont = GoogleFont("Inter"),
-        fontProvider = provider,
-        weight = FontWeight.SemiBold,
-        style = FontStyle.Normal
-    ),
-    Font(
-        googleFont = GoogleFont("Inter"),
-        fontProvider = provider,
-        weight = FontWeight.Bold,
-        style = FontStyle.Normal
-    ),
+val OpenSansCondensed = FontFamily(
+    Font(R.font.open_sans_condensed_regular, FontWeight.Normal),
+    Font(R.font.open_sans_condensed_bold, FontWeight.Bold),
+    // ... добавь остальные из своего списка аналогично
 )
+

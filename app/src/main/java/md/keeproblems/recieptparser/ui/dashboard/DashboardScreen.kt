@@ -1,6 +1,5 @@
 package md.keeproblems.recieptparser.ui.dashboard
 
-import android.widget.Button
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,11 +15,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Shapes
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -42,16 +44,42 @@ import md.keeproblems.recieptparser.utils.imageResource
 import md.keeproblems.recieptparser.utils.textResource
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun DashboardScreen(onScanClick:()->Unit) {
-    Scaffold(bottomBar = {
-        PrimaryButton(
-            onClick = onScanClick,
-            textResource("Scan receipt"),
-            contentModifier = Modifier.fillMaxWidth(),
-            modifier = Modifier.padding(24.dp)
-        )
-    }) { paddingValues ->
+internal fun DashboardScreen(onScanClick: () -> Unit, onSettingsClick: () -> Unit = {}) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    TextAtom(
+                        textResource("Expense Tracker"),
+                        style = AppTextStyle.DisplayMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                actions = {
+                    IconButton(onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors()
+                    .copy(containerColor = MaterialTheme.colorScheme.background),
+            )
+        }, bottomBar = {
+            PrimaryButton(
+                onClick = onScanClick,
+                textResource("Scan receipt"),
+                contentModifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(24.dp)
+                    .padding(bottom = 40.dp)
+            )
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -61,24 +89,6 @@ internal fun DashboardScreen(onScanClick:()->Unit) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                TextAtom(
-                    textResource("Expense Tracker"),
-                    style = AppTextStyle.DisplayMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                IconButton({}) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SpendMoneyCard(textResource("Total"), 1420.00, AppCurrency.Dollar)
                 SpendMoneyCard(textResource("This week"), 290.00, AppCurrency.Dollar)
@@ -94,7 +104,7 @@ internal fun DashboardScreen(onScanClick:()->Unit) {
 @Composable
 fun CategoriesSection() {
     val cardsArrangement = remember { 10.dp }
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TextAtom(
             textResource("Categories"),
             style = AppTextStyle.DisplaySmall,

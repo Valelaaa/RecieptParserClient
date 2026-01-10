@@ -1,6 +1,6 @@
 package md.keeproblems.recieptparser.data.mock
 
-import md.keeproblems.recieptparser.data.entities.PriceInfo
+import md.keeproblems.recieptparser.data.entities.PriceInfoDto
 import md.keeproblems.recieptparser.data.entities.ProductBody
 import md.keeproblems.recieptparser.data.entities.ReceiptResponseBody
 import org.jsoup.Jsoup
@@ -83,7 +83,7 @@ internal class ClientParser {
                 val priceInfo = spans[1].text().trim().split(PRICE_DELIMITER).map { it.trim() }
                 ProductBody(
                     productName = spans[0].text().trim(),
-                    productPrice = PriceInfo(
+                    productPrice = PriceInfoDto(
                         count = priceInfo.first().toDouble(),
                         price = priceInfo.last().toDouble()
                     )

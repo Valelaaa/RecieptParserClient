@@ -8,6 +8,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,12 +22,13 @@ import md.keeproblems.recieptparser.utils.textResource
 fun PrimaryButton(
     onClick: () -> Unit,
     text: TextRes,
+    shape: Shape = Shapes().large,
     contentModifier: Modifier = Modifier,
     modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
-        shape = Shapes().extraLarge,
+        shape = shape,
         modifier = modifier
     ) {
         Column(
@@ -34,8 +36,8 @@ fun PrimaryButton(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextAtom(
-                text,
-                AppTextStyle.Custom(
+                text = text,
+                style = AppTextStyle.Custom(
                     AppTextStyle.TitleSmall.textStyle.copy(fontWeight = FontWeight.SemiBold)
                 ),
                 color = MaterialTheme.colorScheme.onPrimary
@@ -48,7 +50,6 @@ fun PrimaryButton(
 @Composable
 private fun PrimaryButtonPreview() {
     RecieptParserTheme() {
-
         PrimaryButton(onClick = {}, textResource("scan reciept"))
     }
 }

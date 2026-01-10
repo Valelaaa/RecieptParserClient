@@ -18,7 +18,7 @@ val NeutralOutline    = Color(0xFFE0E1E5) // твой был сильно нас
 
 // Текст
 val NeutralOnSurface  = Color(0xFF111111) // почти чистый чёрный как на макете
-val NeutralSecondaryText = Color(0xFF6C6C70) // типичный iOS серый для вторичного текста
+val NeutralSecondaryText = Color(0xFF3A3A3B) // типичный iOS серый для вторичного текста
 
 // Primary = чёрные кнопки как в макетах
 
@@ -26,7 +26,7 @@ val NeutralSecondaryText = Color(0xFF6C6C70) // типичный iOS серый 
 val AccentGreenContainer = Color(0xFFE5F6D6)
 
 // иконка вилки и ножа / галочка
-val AccentGreen          = Color(0xFF9AD66A)
+val AccentGreen          = Color(0xFFC0DCAB)
 
 // текст поверх зелёного (у тебя там иконка, но на всякий)
 val OnAccentGreen        = Color(0xFF0F172A)

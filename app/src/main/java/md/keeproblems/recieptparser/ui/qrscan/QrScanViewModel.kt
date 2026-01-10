@@ -2,6 +2,7 @@ package md.keeproblems.recieptparser.ui.qrscan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,11 +11,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import md.keeproblems.recieptparser.domain.usecases.GetProductsUseCase
-import md.keeproblems.recieptparser.domain.usecases.impl.GetProductsUseCaseImpl
+import javax.inject.Inject
 
-internal class QrScanViewModel(
+@HiltViewModel
+internal class QrScanViewModel @Inject constructor(
     val getProductsUseCase: GetProductsUseCase
-    = GetProductsUseCaseImpl()
 ) : ViewModel() {
     private val _state = MutableStateFlow(QrScanViewState.empty)
     val state = _state.stateIn(
@@ -25,6 +26,7 @@ internal class QrScanViewModel(
 
     val coroutineExceptionHandler by lazy {
         CoroutineExceptionHandler { _, exception ->
+            exception.printStackTrace()
             _state.update {
                 it.copy(
                     isLoading = false,
@@ -37,14 +39,25 @@ internal class QrScanViewModel(
     fun updateProducts(url: String) {
         viewModelScope.launch(coroutineExceptionHandler + IO) {
             _state.update { it.copy(isLoading = true) }
+            println("!!! beforeUSeCase:")
             val products = getProductsUseCase(url)
             _state.update {
                 it.copy(
-                    products = products,
+                    companyName = products.companyName,
+                    products = products.products,
+                    priceInfo = products.priceInfo,
                     isLoading = false
                 )
             }
         }
+    }
+
+    fun onSaveReceipt() {
+
+    }
+
+    fun onShareReceipt() {
+
     }
 
     fun clearError() {

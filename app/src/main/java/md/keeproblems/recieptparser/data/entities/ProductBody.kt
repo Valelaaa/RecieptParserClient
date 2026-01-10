@@ -8,18 +8,18 @@ data class ProductBody(
     @SerializedName("productDescription")
     val productDescription: String = "",
     @SerializedName("productPrice")
-    val productPrice: PriceInfo,
+    val productPrice: PriceInfoDto,
 ) {
     companion object {
-        val EMPTY = ProductBody(productName = "", productDescription = "", productPrice = PriceInfo.EMPTY)
+        val EMPTY = ProductBody(productName = "", productDescription = "", productPrice = PriceInfoDto.EMPTY)
     }
 }
 
-data class PriceInfo(
+data class PriceInfoDto(
     val price: Double,
     val count: Double? = null
 ) {
     companion object {
-        val EMPTY = PriceInfo(price = 0.0, count = null)
+        val EMPTY = PriceInfoDto(price = 0.0, count = null)
     }
 }

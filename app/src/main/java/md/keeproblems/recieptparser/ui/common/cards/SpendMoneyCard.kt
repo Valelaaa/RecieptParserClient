@@ -38,8 +38,9 @@ fun SpendMoneyCard(
     val cardAmount = remember { textResource(amount.formatMoney()) }
 
     Card(
-        modifier = modifier.fillMaxWidth(), shape = Shapes().extraLarge, colors =
-            CardDefaults.cardColors()
+        modifier = modifier.fillMaxWidth(),
+        shape = Shapes().extraLarge,
+        colors = CardDefaults.cardColors()
                 .copy(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
