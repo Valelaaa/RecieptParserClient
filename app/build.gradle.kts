@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
     kotlin("kapt")
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 android {
@@ -78,6 +79,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.kotlinx.serialization.json)
+    implementation (libs.compose.material.icons)
 
 //    hilt
     implementation(libs.hilt.android)

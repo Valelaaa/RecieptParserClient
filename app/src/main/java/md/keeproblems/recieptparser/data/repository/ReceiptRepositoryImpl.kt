@@ -9,7 +9,7 @@ import md.keeproblems.recieptparser.data.entities.PriceInfoDto
 import md.keeproblems.recieptparser.data.entities.ProductBody
 import md.keeproblems.recieptparser.data.entities.ReceiptResponseBody
 import md.keeproblems.recieptparser.data.entities.parser.ReceiptMapper
-import md.keeproblems.recieptparser.domain.models.Products
+import md.keeproblems.recieptparser.domain.models.ReceiptData
 import md.keeproblems.recieptparser.domain.models.PriceInfo
 import md.keeproblems.recieptparser.domain.repository.ReceiptRepository
 import okhttp3.OkHttpClient
@@ -23,9 +23,7 @@ internal class ReceiptRepositoryImpl @Inject constructor(
     private val mapper: ReceiptMapper,
     private val apiService: ParserApiService
 ) : ReceiptRepository {
-    private val cachedProducts = MutableStateFlow<ReceiptResponseBody?>(null)
-    override suspend fun getProducts(url: String): Result<Products> {
-        println("!!! beforeGet!!!")
+    override suspend fun getProducts(url: String): Result<ReceiptData> {
         val result = runCatching {
             val products = getCachedProducts(url)
             println("!!! products:${products}")
@@ -53,11 +51,7 @@ internal class ReceiptRepositoryImpl @Inject constructor(
         return parsingProcess(doc)
     }
     private suspend fun getCachedProducts(url: String): ReceiptResponseBody? {
-        if (cachedProducts.value == null) {
-            val parsed = parseHtml(url)
-            cachedProducts.update { parsed }
-        }
-        return cachedProducts.value
+        return parseHtml(url)
     }
 
     fun parseHtmlString(html: String): ReceiptResponseBody {

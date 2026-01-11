@@ -47,7 +47,7 @@ internal fun SuccessScanResult(
     priceInfo: PriceInfo = PriceInfo(value = "0"),
     date: String,
     onSaveReceipt: () -> Unit = {},
-    onShareReceipt: () -> Unit = {},
+    onReceiptDetails: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -73,7 +73,7 @@ internal fun SuccessScanResult(
                 priceInfo = priceInfo,
                 date = date,
                 onSaveReceipt = onSaveReceipt,
-                onShareReceipt = onShareReceipt
+                onReceiptDetails = onReceiptDetails
             )
         }
     }
@@ -84,7 +84,7 @@ internal fun SuccessScanResultContent(
     priceInfo: PriceInfo = PriceInfo(value = "0"),
     date: String,
     onSaveReceipt: () -> Unit,
-    onShareReceipt: () -> Unit
+    onReceiptDetails: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -147,7 +147,7 @@ internal fun SuccessScanResultContent(
                 modifier = Modifier.fillMaxWidth()
             )
             SecondaryButton(
-                onClick = onShareReceipt,
+                onClick = onReceiptDetails,
                 text = textResource("Details"),
                 modifier = Modifier.fillMaxWidth()
             )

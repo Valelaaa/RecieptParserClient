@@ -1,5 +1,8 @@
 package md.keeproblems.recieptparser.domain.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 internal data class PriceInfo(
     val value: String,
     val currency: Currency = Currency.MDL, // Default in Moldova, so we'll use it

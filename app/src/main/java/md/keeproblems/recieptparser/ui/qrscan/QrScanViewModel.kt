@@ -10,12 +10,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import md.keeproblems.recieptparser.data.repository.UserReceiptRepository
 import md.keeproblems.recieptparser.domain.usecases.GetProductsUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 internal class QrScanViewModel @Inject constructor(
-    val getProductsUseCase: GetProductsUseCase
+    val getProductsUseCase: GetProductsUseCase,
+    val userReceiptRepository: UserReceiptRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(QrScanViewState.empty)
     val state = _state.stateIn(
@@ -36,6 +38,10 @@ internal class QrScanViewModel @Inject constructor(
         }
     }
 
+    fun updateScannedQr(qr: String?) {
+        _state.update { it.copy(scannedQr = qr) }
+    }
+
     fun updateProducts(url: String) {
         viewModelScope.launch(coroutineExceptionHandler + IO) {
             _state.update { it.copy(isLoading = true) }
@@ -45,15 +51,18 @@ internal class QrScanViewModel @Inject constructor(
                 it.copy(
                     companyName = products.companyName,
                     products = products.products,
-                    priceInfo = products.priceInfo,
-                    isLoading = false
+                    totalAmount = products.priceInfo,
+                    isLoading = false,
+                    receiptData = products
                 )
             }
         }
     }
 
     fun onSaveReceipt() {
-
+        viewModelScope.launch {
+            userReceiptRepository.saveProduct(state.value.receiptData)
+        }
     }
 
     fun onShareReceipt() {
@@ -62,5 +71,11 @@ internal class QrScanViewModel @Inject constructor(
 
     fun clearError() {
         _state.update { it.copy(errorMessage = "") }
+    }
+
+    fun resetState() {
+//        println("!!! stateBeforeClean:${state.value}")
+//        _state.update { QrScanViewState.empty }
+//        println("!!! stateAFterClean:${state.value}")
     }
 }

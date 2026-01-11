@@ -2,12 +2,14 @@ package md.keeproblems.recieptparser.ui.scanneddetails
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +46,7 @@ import md.keeproblems.recieptparser.utils.textResource
 @Composable
 internal fun ReceiptDetails(
     products: List<Product>,
+    totalAmount: PriceInfo,
     onBackClick: () -> Unit,
     moreOptionsClick: () -> Unit,
     date: String,
@@ -65,7 +69,7 @@ internal fun ReceiptDetails(
                 .padding(paddingValues)
                 .padding(24.dp)
         ) {
-            ReceiptDetailsContent(products, date, companyName, count)
+            ReceiptDetailsContent(products, date, companyName, count, totalAmount = totalAmount)
         }
     }
 }
@@ -76,6 +80,7 @@ internal fun ReceiptDetailsContent(
     date: String,
     companyName: String,
     count: Int,
+    totalAmount: PriceInfo,
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -84,13 +89,13 @@ internal fun ReceiptDetailsContent(
             .verticalScroll(scrollState)
     ) {
         ReceiptDetailsHeader(date, companyName, count = count)
-        ProductsDetails(products)
+        ProductsDetails(products, totalAmount = totalAmount)
     }
 
 }
 
 @Composable
-internal fun ProductsDetails(products: List<Product>) {
+internal fun ProductsDetails(products: List<Product>, totalAmount: PriceInfo) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         TextAtom(
             text = textResource("Products"),
@@ -98,33 +103,100 @@ internal fun ProductsDetails(products: List<Product>) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Column(modifier = Modifier.fillMaxWidth()) {
-            products.forEach {
+            val finalProducts = products
+                .map {
+                    if (it.productName.contains("6463")) {
+                        Product(it.productName.substringAfter("6463 "), it.productPrice)
+                    } else if (it.productName.contains("1018016")) {
+                        Product(it.productName.substringAfter("1018016 "), it.productPrice)
+                    } else it
+                }.groupBy { it.productName }
+                .map { (name, group) ->
+                    val count = group.size
+                    val singlePrice = group.first().productPrice
+
+                    if (count > 1) {
+                        group.first().copy(
+                            productDescription = "$count x $singlePrice",
+                            productPrice = PriceInfo((singlePrice.value.toDouble() * count).toString())
+                        )
+                    } else {
+                        group.first()
+                    }
+                }
+            finalProducts.forEach {
                 ProductDetails(it)
             }
         }
+        HorizontalDivider(
+            thickness = 3.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+        )
+        TotalAmount(totalAmount)
+        HorizontalDivider()
     }
-    HorizontalDivider()
+}
+
+@Composable
+internal fun TotalAmount(totalAmount: PriceInfo) {
+    Row(
+        modifier = Modifier
+            .padding(vertical = 16.dp)
+            .fillMaxWidth(),
+    ) {
+        TextAtom(
+            text = textResource("Total"),
+            style = AppTextStyle.BodyLargeBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        TextAtom(
+            text = textResource(totalAmount.toString()),
+            style = AppTextStyle.BodyLargeBold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
 }
 
 @Composable
 internal fun ProductDetails(product: Product) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         HorizontalDivider()
+        val halfWidth = (maxWidth + 48.dp) / 2
         Row(
             modifier = Modifier
                 .padding(vertical = 16.dp)
                 .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            TextAtom(
-                text = textResource(product.productName),
-                style = AppTextStyle.BodyLargeSemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = Int.MAX_VALUE,
-                softWrap = true,
+            Column(
                 modifier = Modifier
-                    .padding(end = 24.dp)
                     .weight(1f)
-            )
+                    .padding(end = 24.dp)
+            ) {
+                TextAtom(
+                    text = textResource(product.productName),
+                    style = AppTextStyle.BodyLargeSemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = Int.MAX_VALUE,
+                    softWrap = true,
+                    modifier = Modifier
+                )
+                if (product.productDescription.isNotBlank()) {
+                    Column(
+                        modifier = Modifier.width(halfWidth),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        TextAtom(
+                            text = textResource(product.productDescription),
+                            style = AppTextStyle.BodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
             TextAtom(
                 text = textResource(product.productPrice.toString()),
                 style = AppTextStyle.BodyLargeSemiBold,
@@ -278,6 +350,7 @@ private fun ReceiptDetailsScreenPreview() {
                 ),
                 Product(
                     productName = "productName",
+                    productDescription = "3 x 15",
                     productPrice = PriceInfo(
                         "350",
                     )
@@ -295,7 +368,8 @@ private fun ReceiptDetailsScreenPreview() {
             count = 15,
             moreOptionsClick = {},
             onSaveClick = {},
-            onShareClick = {}
+            onShareClick = {},
+            totalAmount = PriceInfo("3500")
         )
     }
 }

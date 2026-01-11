@@ -2,14 +2,13 @@ package md.keeproblems.recieptparser.ui.qrscan
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
@@ -26,24 +25,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -58,9 +51,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -97,8 +90,6 @@ class QrScanActivity : ComponentActivity() {
         ) { isGranted ->
             if (isGranted) {
                 startCamera()
-            } else {
-                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -114,18 +105,18 @@ class QrScanActivity : ComponentActivity() {
 
     private fun startCamera() {
         setContent {
-            var scannedQr by remember { mutableStateOf<String?>(null) }
-            val viewModel = viewModels<QrScanViewModel>().value
+            val viewModel = hiltViewModel<QrScanViewModel>()
+            val state by viewModel.state.collectAsState()
             RecieptParserTheme {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    if (scannedQr == null) {
+                    if (state.scannedQr == null) {
                         AndroidView(
                             factory = { ctx ->
                                 prepareScan(
                                     ctx,
-                                    scannedQr
+                                    state.scannedQr
                                 ) {
-                                    scannedQr = it
+                                    viewModel.updateScannedQr(it)
                                 }
                             },
                             modifier = Modifier.fillMaxSize()
@@ -133,9 +124,13 @@ class QrScanActivity : ComponentActivity() {
                         QRScanView()
                     }
 
-                    scannedQr?.let { qr ->
+                    state.scannedQr?.let { qr ->
                         println("!!! qr: $qr")
-                        ShowProducts(viewModel, qr)
+                        ShowProducts(
+                            viewModel,
+                            state,
+                            qr
+                        )
                     }
                 }
             }
@@ -264,8 +259,11 @@ class QrScanActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun ShowProducts(viewModel: QrScanViewModel, qr: String) {
-        val state by viewModel.state.collectAsState()
+    private fun ShowProducts(
+        viewModel: QrScanViewModel,
+        state: QrScanViewState,
+        qr: String,
+    ) {
         val navController = rememberNavController()
         val currentDate = remember {
             val formatter =
@@ -281,64 +279,33 @@ class QrScanActivity : ComponentActivity() {
                     if (state.products.isNotEmpty()) {
 
                         SuccessScanResult(
-                            onBackClick = {
-                                navController.popBackStack()
-                            },
+                            onBackClick = { onExitClick() },
                             date = currentDate,
-                            priceInfo = state.priceInfo,
+                            priceInfo = state.totalAmount,
                             onSaveReceipt = {
-                                navController.navigate(QrScanScreens.ScannedList.route)
                                 viewModel.onSaveReceipt()
+                                onExitClick()
                             },
-                            onShareReceipt = {
+                            onReceiptDetails = {
                                 navController.navigate(QrScanScreens.ReceiptDetailsScreen.route)
                             }
                         )
-                    }
-                }
-                composable(route = QrScanScreens.ScannedList.route) {
-                    if (state.products.isNotEmpty()) {
-                        Column(
-                            modifier = Modifier
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            state.products.forEach {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .padding(horizontal = 12.dp, vertical = 16.dp)
-                                ) {
-                                    Text(
-                                        it.productName,
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                    Text(
-                                        text = it.productPrice.toString(),
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
                 composable(route = QrScanScreens.ReceiptDetailsScreen.route) {
                     if (state.products.isNotEmpty()) {
                         ReceiptDetails(
                             products = state.products,
-                            onBackClick = { navController.popBackStack() },
+                            totalAmount = state.totalAmount,
+                            onBackClick = { onExitClick() },
                             date = currentDate,
                             companyName = state.companyName,
                             count = state.products.size,
                             moreOptionsClick = {},
-                            onSaveClick = {},
+                            onSaveClick = {
+                                viewModel.onSaveReceipt()
+                                onExitClick()
+                            },
                             onShareClick = {}
                         )
                     }
@@ -351,8 +318,6 @@ class QrScanActivity : ComponentActivity() {
             viewModel.updateProducts(url = qr)
         }
         LaunchedEffect(state.errorMessage) {
-            Toast.makeText(this@QrScanActivity, state.errorMessage, Toast.LENGTH_SHORT)
-                .show()
             viewModel.clearError()
         }
     }
@@ -416,6 +381,13 @@ class QrScanActivity : ComponentActivity() {
         }, ContextCompat.getMainExecutor(ctx))
 
         return previewView
+    }
+
+    private fun onExitClick() {
+        val intent = Intent()
+        intent.putExtra("SCANNED_RECEIPT", true)
+        setResult(RESULT_OK, intent)
+        finish()
     }
 
     @Composable

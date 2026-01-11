@@ -5,6 +5,8 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import md.keeproblems.recieptparser.data.repository.ReceiptRepositoryImpl
+import md.keeproblems.recieptparser.data.repository.UserReceiptRepository
+import md.keeproblems.recieptparser.data.repository.UserReceiptRepositoryImpl
 import md.keeproblems.recieptparser.domain.repository.ReceiptRepository
 import javax.inject.Singleton
 
@@ -16,4 +18,9 @@ abstract class RepositoryModule {
     internal abstract fun bindsReceiptRepository(
         receiptRepositoryImpl: ReceiptRepositoryImpl
     ): ReceiptRepository
+
+    @Binds
+    internal abstract fun bindUserReceiptRepository(
+        impl: UserReceiptRepositoryImpl
+    ): UserReceiptRepository
 }
