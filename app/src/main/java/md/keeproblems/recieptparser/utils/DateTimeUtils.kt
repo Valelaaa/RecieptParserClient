@@ -23,9 +23,9 @@ fun formatReceiptDate(date: LocalDate?): String {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun formatDate(date: LocalDate): String {
+fun formatDate(date: LocalDate?): String {
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-    return date.format(formatter)
+    return date?.format(formatter) ?: ""
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

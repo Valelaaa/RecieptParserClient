@@ -12,7 +12,8 @@ import java.util.UUID
 internal data class Product(
     val productName: String,
     val productPrice: PriceInfo,
-    val productDescription: String = ""
+    val productDescription: String = "",
+    val category: ProductCategory = ProductCategory.None
 )
 
 @Serializable

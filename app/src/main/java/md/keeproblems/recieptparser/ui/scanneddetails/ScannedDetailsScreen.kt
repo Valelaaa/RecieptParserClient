@@ -1,5 +1,7 @@
 package md.keeproblems.recieptparser.ui.scanneddetails
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -35,11 +37,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import md.keeproblems.recieptparser.domain.models.Product
 import md.keeproblems.recieptparser.domain.models.PriceInfo
+import md.keeproblems.recieptparser.domain.models.ReceiptData
 import md.keeproblems.recieptparser.ui.common.atomic.TextAtom
 import md.keeproblems.recieptparser.ui.common.buttons.PrimaryButton
 import md.keeproblems.recieptparser.ui.common.buttons.SecondaryButton
 import md.keeproblems.recieptparser.ui.theme.AppTextStyle
 import md.keeproblems.recieptparser.ui.theme.RecieptParserTheme
+import md.keeproblems.recieptparser.utils.formatDate
 import md.keeproblems.recieptparser.utils.textResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,15 +56,17 @@ internal fun ReceiptDetails(
     date: String,
     companyName: String,
     count: Int,
-    onSaveClick: () -> Unit,
-    onShareClick: () -> Unit,
+    onSaveClick: () -> Unit = {},
+    onShareClick: () -> Unit = {},
+    shouldShowButtons: Boolean = true,
 ) {
     Scaffold(
         topBar = {
             ReceiptDetailsTopBar(onBackClick = onBackClick, actionsClick = moreOptionsClick)
         },
         bottomBar = {
-            ReceiptDetailsBottomBar(onSaveClick = onSaveClick, onShareClick = onShareClick)
+            if (shouldShowButtons)
+                ReceiptDetailsBottomBar(onSaveClick = onSaveClick, onShareClick = onShareClick)
         }
     ) { paddingValues ->
         Box(
@@ -72,6 +78,31 @@ internal fun ReceiptDetails(
             ReceiptDetailsContent(products, date, companyName, count, totalAmount = totalAmount)
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+internal fun ReceiptDetailsWrapper(
+    receiptData: ReceiptData?,
+    onBackClick: () -> Unit,
+    moreOptionsClick: () -> Unit,
+    onSaveClick: () -> Unit = {},
+    onShareClick: () -> Unit = {},
+    shouldShowButtons: Boolean = true
+) {
+    if (receiptData != null)
+        ReceiptDetails(
+            products = receiptData.products,
+            totalAmount = receiptData.priceInfo,
+            onBackClick = onBackClick,
+            moreOptionsClick = moreOptionsClick,
+            companyName = receiptData.companyName,
+            date = formatDate(receiptData.receiptDate),
+            count = receiptData.products.size,
+            onSaveClick = onSaveClick,
+            onShareClick = onShareClick,
+            shouldShowButtons = shouldShowButtons
+        )
 }
 
 @Composable

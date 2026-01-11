@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +37,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import md.keeproblems.recieptparser.R
-import md.keeproblems.recieptparser.domain.models.PriceInfo
 import md.keeproblems.recieptparser.domain.models.ReceiptData
 import md.keeproblems.recieptparser.ui.common.atomic.TextAtom
 import md.keeproblems.recieptparser.ui.common.buttons.PrimaryButton
@@ -68,7 +65,6 @@ import md.keeproblems.recieptparser.utils.formatReceiptDate
 import md.keeproblems.recieptparser.utils.formatTime
 import md.keeproblems.recieptparser.utils.imageResource
 import md.keeproblems.recieptparser.utils.textResource
-import kotlin.Unit
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -77,6 +73,8 @@ import kotlin.Unit
 internal fun DashboardScreen(
     onScanClick: () -> Unit,
     onSettingsClick: () -> Unit = {},
+    onViewAllClick: () -> Unit = {},
+    onReceiptClick: (String) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel<DashboardViewModel>(),
     scanResultFlow: MutableSharedFlow<Unit>,
 ) {
@@ -136,7 +134,7 @@ internal fun DashboardScreen(
                 ) {
                     SpendMoneyCardShort(
                         title = textResource("This month"),
-                        price =  state.spentMonth,
+                        price = state.spentMonth,
                         modifier = Modifier.weight(1f)
                     )
                     SpendMoneyCardShort(
@@ -149,14 +147,18 @@ internal fun DashboardScreen(
 
             CategoriesSection()
             if (state.history.isNotEmpty())
-                LastReceiptsSection(state.history)
+                LastReceiptsSection(state.history, onViewAllClick = onViewAllClick, onReceiptClick)
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-internal fun LastReceiptsSection(productList: List<ReceiptData>) {
+internal fun LastReceiptsSection(
+    productList: List<ReceiptData>,
+    onViewAllClick: () -> Unit,
+    onReceiptClick: (String) -> Unit
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -173,9 +175,7 @@ internal fun LastReceiptsSection(productList: List<ReceiptData>) {
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable() {
-
-                    }
+                    .clickable(onClick = onViewAllClick)
                     .padding(horizontal = 4.dp)
             ) {
                 TextAtom(
@@ -198,7 +198,9 @@ internal fun LastReceiptsSection(productList: List<ReceiptData>) {
         ) {
             productList.forEachIndexed { index, item ->
                 Column(modifier = Modifier.padding(12.dp)) {
-                    ReceiptPreview(item)
+                    ReceiptPreview(item, {
+                        onReceiptClick(item.id)
+                    })
                 }
                 if (productList.size - 1 != index)
                     HorizontalDivider()
@@ -209,11 +211,13 @@ internal fun LastReceiptsSection(productList: List<ReceiptData>) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-internal fun ReceiptPreview(receipt: ReceiptData) {
+internal fun ReceiptPreview(receipt: ReceiptData, onClick: () -> Unit) {
     val receiptDate = formatReceiptDate(receipt.receiptDate)
     val receiptTime = formatTime(receipt.receiptTime)
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -286,6 +290,7 @@ fun CategoriesSection() {
         }
     }
 }
+
 data class CardData(
     val title: String,
     val imageRes: Int,
@@ -347,6 +352,6 @@ private fun CategoryCardPreview() {
 @Composable
 private fun DashboardScreenPreview() {
     RecieptParserTheme() {
-        DashboardScreen(onScanClick = {}, scanResultFlow = MutableSharedFlow())
+        DashboardScreen(onScanClick = {}, scanResultFlow = MutableSharedFlow(), onReceiptClick = {})
     }
 }
