@@ -56,11 +56,12 @@ import md.keeproblems.recieptparser.R
 internal fun ShoppingListsScreen(
     onBackClick: () -> Unit,
     onReceiptClick: (String) -> Unit,
+    onDonatChartClick: () -> Unit,
     viewModel: ShoppingListViewModel = hiltViewModel<ShoppingListViewModel>()
 ) {
     val state by viewModel.state.collectAsState()
     Scaffold(topBar = {
-        ShoppingListsTopBar(onBackClick = onBackClick)
+        ShoppingListsTopBar(onBackClick = onBackClick, onDonatChartClick = onDonatChartClick)
     }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -119,7 +120,7 @@ internal fun ShoppingListsScreenContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingListsTopBar(onBackClick: () -> Unit) {
+fun ShoppingListsTopBar(onBackClick: () -> Unit, onDonatChartClick: () -> Unit) {
     CenterAlignedTopAppBar(
         modifier = Modifier.padding(horizontal = 16.dp),
         colors = TopAppBarDefaults.topAppBarColors().copy(
@@ -139,7 +140,7 @@ fun ShoppingListsTopBar(onBackClick: () -> Unit) {
         },
         actions = {
             IconButton({
-
+                onDonatChartClick()
             }
             ) {
                 Icon(painterResource(R.drawable.donut_chart), null, modifier = Modifier.size(24.dp))
@@ -250,6 +251,6 @@ internal fun ShoppingListItem(receipt: ReceiptData, onClick: () -> Unit) {
 @Composable
 private fun ShoppingListsScreenPreview() {
     RecieptParserTheme {
-        ShoppingListsScreen(onBackClick = {}, onReceiptClick = {})
+        ShoppingListsScreen(onBackClick = {}, onDonatChartClick = {}, onReceiptClick = {})
     }
 }

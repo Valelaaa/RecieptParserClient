@@ -35,8 +35,8 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import md.keeproblems.recieptparser.domain.models.ReceiptData
+import md.keeproblems.recieptparser.ui.DonutChartScreen
 import md.keeproblems.recieptparser.ui.dashboard.DashboardScreen
-import md.keeproblems.recieptparser.ui.scanneddetails.ReceiptDetails
 import md.keeproblems.recieptparser.ui.scanneddetails.ReceiptDetailsWrapper
 import md.keeproblems.recieptparser.ui.shoppinglists.ShoppingListsScreen
 import md.keeproblems.recieptparser.ui.theme.RecieptParserTheme
@@ -82,6 +82,9 @@ class MainActivity : ComponentActivity() {
                             onBackClick = {
                                 navController.popBackStack()
                             },
+                            onDonatChartClick = {
+                                navController.navigate(MainNavigation.CategoriesChart.route)
+                            },
                             onReceiptClick = { id ->
                                 navController.navigate(
                                     MainNavigation.ReceiptDescription.createRoute(
@@ -101,6 +104,15 @@ class MainActivity : ComponentActivity() {
                         RecieptDetailsScreen(
                             receiptId ?: "",
                             onBackClick = { navController.popBackStack() }
+                        )
+                    }
+                    composable(
+                        MainNavigation.CategoriesChart.route,
+                    ) {
+                        DonutChartScreen(
+                            onBackClick = {
+                                navController.popBackStack()
+                            }
                         )
                     }
                 }
@@ -174,6 +186,8 @@ sealed class MainNavigation(val route: String) {
 
         fun createRoute(id: String) = "$route/$id"
     }
+
+    data object CategoriesChart : MainNavigation("categories_chart")
 }
 
 @Composable

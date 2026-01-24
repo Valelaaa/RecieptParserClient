@@ -81,7 +81,7 @@ internal fun DashboardScreen(
     val state by viewModel.state.collectAsState()
     LaunchedEffect(scanResultFlow) {
         scanResultFlow.collect {
-            viewModel.refreshHistory()
+            viewModel.refresh()
         }
     }
     Scaffold(

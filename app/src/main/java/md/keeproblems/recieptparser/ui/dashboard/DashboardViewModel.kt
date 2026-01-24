@@ -26,6 +26,10 @@ internal class DashboardViewModel @Inject constructor(
     val state: StateFlow<DashboardViewState> = _state
 
     init {
+        refresh()
+    }
+
+    fun refresh() {
         refreshHistory()
         refreshSpentAmounts()
     }
@@ -45,7 +49,13 @@ internal class DashboardViewModel @Inject constructor(
             val spentWeek = calculateSpentThisWeek(allReceipts)
             val spentMonth = calculateSpentThisMonth(allReceipts)
             val spentTotal = calculateSpentTotal(allReceipts)
-            _state.update { it.copy(spentWeek = spentWeek, spentMonth = spentMonth, spentTotal = spentTotal) }
+            _state.update {
+                it.copy(
+                    spentWeek = spentWeek,
+                    spentMonth = spentMonth,
+                    spentTotal = spentTotal
+                )
+            }
         }
     }
 

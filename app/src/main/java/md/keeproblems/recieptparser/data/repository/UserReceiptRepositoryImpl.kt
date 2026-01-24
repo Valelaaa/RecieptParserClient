@@ -8,7 +8,6 @@ internal class UserReceiptRepositoryImpl @Inject constructor(
     private val localDataSource: LocalSharedPrefsDataSource<ReceiptData>
 ) : UserReceiptRepository {
 
-
     override suspend fun getProductsById(id: String): ReceiptData? {
         return localDataSource.getAll().firstOrNull { it.id == id }
     }

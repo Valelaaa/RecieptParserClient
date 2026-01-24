@@ -7,10 +7,13 @@ internal data class PriceInfo(
     val value: String,
     val currency: Currency = Currency.MDL, // Default in Moldova, so we'll use it
 ) {
+
     override fun toString(): String {
+        val numericValue = value.toDoubleOrNull() ?: 0.0
+        val formattedValue = String.format("%.2f", numericValue)
         val space = if (currency.noSpace) "" else " "
         return if (currency.prefix) {
-            "${currency.symbol}$value"
+            "${currency.symbol}$formattedValue"
         } else {
             "$value$space${currency.symbol}"
         }

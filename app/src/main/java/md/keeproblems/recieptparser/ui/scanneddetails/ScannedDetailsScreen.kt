@@ -62,11 +62,17 @@ internal fun ReceiptDetails(
 ) {
     Scaffold(
         topBar = {
-            ReceiptDetailsTopBar(onBackClick = onBackClick, actionsClick = moreOptionsClick)
+            ReceiptDetailsTopBar(
+                onBackClick = onBackClick,
+                actionsClick = moreOptionsClick
+            )
         },
         bottomBar = {
             if (shouldShowButtons)
-                ReceiptDetailsBottomBar(onSaveClick = onSaveClick, onShareClick = onShareClick)
+                ReceiptDetailsBottomBar(
+                    onSaveClick = onSaveClick,
+                    onShareClick = onShareClick
+                )
         }
     ) { paddingValues ->
         Box(
@@ -75,7 +81,13 @@ internal fun ReceiptDetails(
                 .padding(paddingValues)
                 .padding(24.dp)
         ) {
-            ReceiptDetailsContent(products, date, companyName, count, totalAmount = totalAmount)
+            ReceiptDetailsContent(
+                products = products,
+                date = date,
+                companyName = companyName,
+                count = count,
+                totalAmount = totalAmount
+            )
         }
     }
 }
