@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import md.keeproblems.recieptparser.data.apiservices.AiApiService
 import md.keeproblems.recieptparser.data.apiservices.ParserApiService
 import md.keeproblems.recieptparser.utils.RetrofitProvider
 import retrofit2.create
@@ -15,8 +16,17 @@ object NetworkModule {
     @Provides
     @Singleton
     internal fun provideReceiptApi(
-    ): ParserApiService{
+    ): ParserApiService {
         return RetrofitProvider.retrofit
-        .create<ParserApiService>()
+            .create<ParserApiService>()
+    }
+
+    @Provides
+    @Singleton
+    internal fun provideAiApiService(
+    ): AiApiService {
+        return RetrofitProvider
+            .getRetrofit("http://34.234.64.118:8080/")
+            .create<AiApiService>()
     }
 }
