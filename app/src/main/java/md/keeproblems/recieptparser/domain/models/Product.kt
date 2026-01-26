@@ -13,11 +13,8 @@ internal data class Product(
     val productName: String,
     val productPrice: PriceInfo,
     val productDescription: String = "",
-    val category: Category = Category()
+    val category: ProductCategory = ProductCategory.None
 )
-
-@Serializable
-internal data class Category(val name: String = "", val colorValue: String = "")
 
 @Serializable
 internal data class ReceiptData(

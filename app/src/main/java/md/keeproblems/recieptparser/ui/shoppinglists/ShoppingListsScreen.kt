@@ -2,7 +2,6 @@ package md.keeproblems.recieptparser.ui.shoppinglists
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +48,6 @@ import md.keeproblems.recieptparser.utils.formatTime
 import md.keeproblems.recieptparser.utils.textResource
 import javax.inject.Inject
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.res.painterResource
 import md.keeproblems.recieptparser.R
 
@@ -231,23 +229,17 @@ internal fun ShoppingListItem(receipt: ReceiptData, onClick: () -> Unit) {
                 )
             }
             HorizontalDivider()
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+            Row {
                 val itemsLabel = when (receipt.products.size) {
                     1 -> "item"
                     else -> "items"
                 }
-
-                val categories = receipt.products
-                    .map { it.category.name }
-                    .filter { it.isNotEmpty() }
-                    .distinct()
-                    .joinToString(" • ")
-
                 TextAtom(
-                    textResource("${receipt.products.size} $itemsLabel • $categories"),
+                    textResource("${receipt.products.size} $itemsLabel •"),
                     style = AppTextStyle.LabelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
+
             }
         }
     }

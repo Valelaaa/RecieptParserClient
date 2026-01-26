@@ -10,20 +10,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import md.keeproblems.recieptparser.data.entities.ProductDescription
-import md.keeproblems.recieptparser.data.entities.ProductPayloadDto
-import md.keeproblems.recieptparser.data.repository.NormalizedProductsRepository
 import md.keeproblems.recieptparser.data.repository.UserReceiptRepository
-import md.keeproblems.recieptparser.domain.models.Category
 import md.keeproblems.recieptparser.domain.usecases.GetProductsUseCase
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 internal class QrScanViewModel @Inject constructor(
     val getProductsUseCase: GetProductsUseCase,
     val userReceiptRepository: UserReceiptRepository,
-    val normalizedProductsRepository: NormalizedProductsRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(QrScanViewState.empty)
     val state = _state.stateIn(
@@ -52,35 +46,7 @@ internal class QrScanViewModel @Inject constructor(
         viewModelScope.launch(coroutineExceptionHandler + IO) {
             _state.update { it.copy(isLoading = true) }
             println("!!! beforeUSeCase:")
-            var products = getProductsUseCase(url)
-            val normalizedProducts = normalizedProductsRepository.normalizeProducts(
-                ProductPayloadDto(
-                    products.products.map {
-                        ProductDescription(
-                            id = it.productName.hashCode().toString(), name = it.productName
-                        )
-                    }
-                )
-            ).getOrThrow()
-
-            println("!!! normalizedProducts: ${normalizedProducts}")
-            val normalizedMap =
-                normalizedProducts?.normalizedProducts?.associateBy { it.originalName }
-            products = products.copy(
-                products = products.products.map { original ->
-                    normalizedMap?.get(original.productName)?.let { normalized ->
-                        original.copy(
-                            productName = normalized.normalizedName,
-                            productDescription = normalized.flavor + " " + normalized.size,
-                            category = Category(
-                                name = normalized.category,
-                                colorValue = normalized.categoryColor
-                            ),
-                        )
-                    } ?: original
-                }
-            )
-
+            val products = getProductsUseCase(url)
             _state.update {
                 it.copy(
                     companyName = products.companyName,
@@ -99,9 +65,17 @@ internal class QrScanViewModel @Inject constructor(
         }
     }
 
+    fun onShareReceipt() {
+
+    }
 
     fun clearError() {
         _state.update { it.copy(errorMessage = "") }
     }
 
+    fun resetState() {
+//        println("!!! stateBeforeClean:${state.value}")
+//        _state.update { QrScanViewState.empty }
+//        println("!!! stateAFterClean:${state.value}")
+    }
 }

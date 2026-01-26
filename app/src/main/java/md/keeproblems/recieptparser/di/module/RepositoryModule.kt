@@ -4,7 +4,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import md.keeproblems.recieptparser.data.repository.NormalizedProductsRepository
 import md.keeproblems.recieptparser.data.repository.ReceiptRepositoryImpl
 import md.keeproblems.recieptparser.data.repository.UserReceiptRepository
 import md.keeproblems.recieptparser.data.repository.UserReceiptRepositoryImpl

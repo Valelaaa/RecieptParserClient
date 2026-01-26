@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
-    id("com.google.gms.google-services")
     kotlin("kapt")
     kotlin("plugin.serialization") version "1.9.0"
 }
@@ -48,8 +47,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp.logging)
-    implementation(libs.firebase.bom)
-    implementation(libs.firebase.analytics)
+
     // Coroutines
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)

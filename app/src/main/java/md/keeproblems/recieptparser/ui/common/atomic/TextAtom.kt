@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import md.keeproblems.recieptparser.ui.theme.AppTextStyle
 import md.keeproblems.recieptparser.ui.theme.RecieptParserTheme
 import md.keeproblems.recieptparser.utils.TextRes
@@ -24,7 +23,6 @@ fun TextAtom(
     maxLines: Int = 1,
     overflow: TextOverflow = TextOverflow.Visible,
     softWrap: Boolean = true,
-    lineHeight: TextUnit = TextUnit.Unspecified,
     modifier: Modifier = Modifier
 ) {
     Text(
@@ -37,7 +35,6 @@ fun TextAtom(
         modifier = modifier,
         overflow = overflow,
         softWrap = softWrap,
-        lineHeight = lineHeight,
     )
 }
 

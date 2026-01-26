@@ -2,7 +2,6 @@ package md.keeproblems.recieptparser.ui.scanneddetails
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -34,13 +31,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import md.keeproblems.recieptparser.domain.models.Product
 import md.keeproblems.recieptparser.domain.models.PriceInfo
 import md.keeproblems.recieptparser.domain.models.ReceiptData
@@ -152,8 +146,15 @@ internal fun ProductsDetails(products: List<Product>, totalAmount: PriceInfo) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Column(modifier = Modifier.fillMaxWidth()) {
-            val finalProducts = products.groupBy { it.productName }
-                .map { (_, group) ->
+            val finalProducts = products
+                .map {
+                    if (it.productName.contains("6463")) {
+                        Product(it.productName.substringAfter("6463 "), it.productPrice)
+                    } else if (it.productName.contains("1018016")) {
+                        Product(it.productName.substringAfter("1018016 "), it.productPrice)
+                    } else it
+                }.groupBy { it.productName }
+                .map { (name, group) ->
                     val count = group.size
                     val singlePrice = group.first().productPrice
 
@@ -226,41 +227,16 @@ internal fun ProductDetails(product: Product) {
                     softWrap = true,
                     modifier = Modifier
                 )
-                Row(modifier = Modifier.padding(top = 8.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                Color(
-                                    product.category.colorValue.takeIf { it.isNotBlank() }
-                                        ?.removePrefix("0x")?.toLong(16) ?: 0L
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .padding(vertical = 4.dp, horizontal = 6.dp)
+                if (product.productDescription.isNotBlank()) {
+                    Column(
+                        modifier = Modifier.width(halfWidth),
+                        horizontalAlignment = Alignment.End
                     ) {
                         TextAtom(
-                            text = textResource(
-                                product.category.name.split(" ").joinToString("\n")
-                            ),
-                            lineHeight = 12.sp,
-                            style = AppTextStyle.BodySmallSemiBold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align(Alignment.Center),
-                            maxLines = Int.MAX_VALUE
+                            text = textResource(product.productDescription),
+                            style = AppTextStyle.BodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                    }
-                    if (product.productDescription.isNotBlank()) {
-                        Column(
-                            modifier = Modifier.width(halfWidth),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            TextAtom(
-                                text = textResource(product.productDescription),
-                                style = AppTextStyle.BodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
                     }
                 }
             }

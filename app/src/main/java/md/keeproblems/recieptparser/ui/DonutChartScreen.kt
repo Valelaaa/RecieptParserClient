@@ -62,8 +62,6 @@ import md.keeproblems.recieptparser.ui.theme.RecieptParserTheme
 import md.keeproblems.recieptparser.utils.textResource
 import javax.inject.Inject
 import kotlin.random.Random
-import androidx.core.graphics.toColorInt
-import kotlin.math.roundToInt
 
 @HiltViewModel
 internal class DonutChartViewModel @Inject constructor(private val userReceiptRepository: UserReceiptRepository) :
@@ -84,32 +82,35 @@ internal class DonutChartViewModel @Inject constructor(private val userReceiptRe
                 .filterNot { it.productPrice.value.toDouble() == 0.0 }
                 .filterNot { it.productName.startsWith("INTRODUS") }
 
-            val grouped = mappedProducts.groupBy { it.category.name }
+            val grouped = mappedProducts.groupBy { it.productName }
                 .map { (name, products) ->
                     val totalValue = products.sumOf { it.productPrice.value.toDouble() }
                     name to totalValue
                 }
 
-            val categoryData = grouped
-                .filter { (name, _) ->
-                    mappedProducts.any { it.category.name == name && !it.category.colorValue.isNullOrBlank() }
-                }
-                .map { (name, totalValue) ->
-                    val colorValue = mappedProducts
-                        .first { it.category.name == name }
-                        .category.colorValue
+            val colorMap = _state.value.allProducts
+                .associateBy({ it.name }, { it.color })
+                .toMutableMap()
 
-                    val color = Color(colorValue.removePrefix("0x").toLong(16).toInt())
-
-                    CategoryChartView(
-                        value = PriceInfo(
-                            value = totalValue.toString(),
-                            currency = state.value.currency
-                        ),
-                        name = name,
-                        color = color
+            val categoryData = grouped.map { (name, totalValue) ->
+                val color = colorMap.getOrPut(name) {
+                    Color(
+                        red = Random.nextFloat(),
+                        green = Random.nextFloat(),
+                        blue = Random.nextFloat(),
+                        alpha = 1f
                     )
                 }
+
+                CategoryChartView(
+                    value = PriceInfo(
+                        value = totalValue.toString(),
+                        currency = state.value.currency
+                    ),
+                    name = name,
+                    color = color
+                )
+            }
 
             _state.update { state ->
                 state.copy(allProducts = categoryData, filteredProducts = categoryData)
@@ -197,9 +198,9 @@ private fun TotalAmountComponent(totalAmount: PriceInfo) {
             .drawBehind {
                 val gradient = Brush.horizontalGradient(
                     colors = listOf(
-                        backgroundColor,
-                        borderColor,
-                        backgroundColor
+                        backgroundColor, // слева фон
+                        borderColor,     // в центре яркий цвет
+                        backgroundColor  // справа фон
                     ),
                     startX = 0f,
                     endX = size.width
@@ -217,7 +218,8 @@ private fun TotalAmountComponent(totalAmount: PriceInfo) {
                     strokeWidth = 4f
                 )
             }
-            .padding(16.dp),
+            .padding(16.dp)
+            ,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -238,13 +240,12 @@ private fun DonutChartContent(
     modifier: Modifier = Modifier
 ) {
     val total = state.filteredProducts.sumOf { it.value.value.toDoubleOrNull() ?: 0.0 }
-    val rounded = (total * 100).roundToInt() / 100.0
     DonutChart(
         modifier = modifier,
         categoryData = state.allProducts,
         filteredData = state.filteredProducts,
         totalFilteredAmount = PriceInfo(
-            value = "$rounded",
+            value = total.toString(),
             currency = Currency.MDL
         ),
         onCategoryClick = onCategoryClick,
@@ -284,8 +285,7 @@ private fun ChartLegend(
                             .background(color = it.color)
                     )
                     val percentage = (it.value.value.toDouble() / totalValue) * 100
-                    val rounded = (percentage * 100).roundToInt() / 100.0
-                    val formatted = "$rounded%"
+                    val formatted = String.format("%.1f%%", percentage)
                     TextAtom(
                         style = AppTextStyle.BodyLarge,
                         text = textResource("${it.name} $formatted"),
@@ -293,11 +293,9 @@ private fun ChartLegend(
                         maxLines = Int.MAX_VALUE
                     )
                 }
-                val rounded = (it.value.value.toDouble() * 100).roundToInt() / 100.0
-
                 TextAtom(
                     style = AppTextStyle.TitleSmall,
-                    text = textResource(it.value.copy(rounded.toString()).toString()),
+                    text = textResource(it.value.toString()),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -335,12 +333,12 @@ private fun DonutChart(
                         isDrawHoleEnabled = true
                         holeRadius = 60f
                         transparentCircleRadius = 65f
-                        centerText = "January"
+
                         setUsePercentValues(true)
-                        setDrawEntryLabels(false)
-                        centerTextRadiusPercent = 50f
-                        setCenterTextSize(20f)
+
                         legend.isEnabled = false
+                        setEntryLabelColor(android.graphics.Color.WHITE)
+                        setEntryLabelTextSize(13f)
                         setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
                             override fun onValueSelected(e: Entry?, h: Highlight?) {
                                 val label = (e as? PieEntry)?.label ?: return
@@ -370,7 +368,13 @@ private fun DonutChart(
 
                     chart.data = data
                     chart.invalidate()
-                }
+                })
+
+            TextAtom(
+                textResource(name),
+                style = AppTextStyle.TitleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.Center)
             )
         }
         TotalAmountComponent(totalAmount = totalFilteredAmount)

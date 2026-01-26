@@ -91,14 +91,6 @@ sealed class AppTextStyle(val textStyle: TextStyle) {
             fontFamily = OpenSans
         )
     )
-    data object BodySmallSemiBold : AppTextStyle(
-        TextStyle(
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            lineHeight = 18.sp,
-            fontFamily = OpenSans
-        )
-    )
     data object BodyLargeSemiBold : AppTextStyle(
         TextStyle(
             fontSize = 16.sp,
